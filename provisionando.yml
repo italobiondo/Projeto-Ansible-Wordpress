@@ -43,8 +43,8 @@
       become: yes
 
     - name: Copy file with owner and permissions
-      ansible.builtin.copy:
-        src: files/wordpress.conf
+      ansible.builtin.template:
+        src: templates/wordpress.conf.j2
         dest: /etc/apache2/sites-available/000-default.conf
       become: yes
       notify:
@@ -60,19 +60,19 @@
 
     - name: Configura o arquivo wp-config.php com os dados corretos do banco de dados
       ansible.builtin.replace:
-        path: '{{ wp_dir}}/wp-config.php'
+        path: '{{ wp_dir }}/wp-config.php'
         regexp: {{ item.regexp }}
         replace: {{ item.replace }}
       with_items:
       - { regexp: "database_name_here", replace: "{{ wp_db_name }}" }
-      - { regexp: "username_here", replace: "{{ wp_db_user}}" }
-      - { regexp: "password_here", replace: "{{ wp_db_pass}}" }
-      - { regexp: "localhost", replace: "{{ db_ip}}" }
+      - { regexp: "username_here", replace: "{{ wp_db_user }}" }
+      - { regexp: "password_here", replace: "{{ wp_db_pass }}" }
+      - { regexp: "localhost", replace: "{{ db_ip }}" }
       become: yes
 
     - name: Replace a localhost entry searching for a literal string to avoid escaping
       ansible.builtin.lineinfile:
-        path: '{{ wp_dir}}/wp-config.php'
+        path: '{{ wp_dir }}/wp-config.php'
         search_string: {{ item.search_string }}
         line: {{ item.line }}
       with_items:
@@ -124,8 +124,8 @@
 
     - name: Cria um usuário 'wordpress_user' e senha '12345' com alguns privilégios na database
       community.mysql.mysql_user:
-        name: '{{ wp_db_user}}'
-        password: '{{ wp_db_pass}}'
+        name: '{{ wp_db_user }}'
+        password: '{{ wp_db_pass }}'
         priv: '{{ wp_db_name }}.*:SELECT,INSERT,UPDATE,DELETE,CREATE,DROP,ALTER'
         state: present
         login_unix_socket: /run/mysqld/mysqld.sock
